@@ -1,0 +1,502 @@
+Option Explicit
+Sub Separate()
+    Dim currentrow As Integer, tempint As Integer, tbnormalized As Single, meanamp As Single, _
+        maxamp As Single, deltatot As Single, alphatot As Single, betatot As Single, gammatot As Single
+    
+    ActiveSheet.Rows("1:4").Insert                  'adds 4 rows to top
+    currentrow = 6                                  'adds rows above bottom range
+    Do While ActiveSheet.Cells(currentrow, 1) <> 0
+        currentrow = currentrow + 1
+    Loop
+    For tempint = 1 To 6
+        ActiveSheet.Rows(currentrow).Insert
+    Next
+    
+    ActiveSheet.Range("A1:D1").Select       'Puts title of sheet in cell A1
+        With Selection
+            .MergeCells = True
+            .Font.Bold = True
+            .Value = ActiveSheet.Name
+        End With
+    ActiveSheet.Range("A10").CurrentRegion.Name = "topr"    'sets top and bottom ranges
+    ActiveSheet.Range("A1").Offset(currentrow + 8, 0).CurrentRegion.Name = "bottomr"
+    
+    ActiveSheet.Range("topr").Offset(-1, 0).Resize(1, 2).Select 'titles columns of topr
+        With Selection
+            .Font.Bold = True
+            .HorizontalAlignment = xlCenter
+            .Cells(1, 1) = "Time"
+            .Cells(1, 2) = "Voltage"
+        End With
+        
+    ActiveSheet.Range("bottomr").Offset(-1, 1).Resize(1, 2).Select  'titles columns of bottomr
+        With Selection
+            .Font.Bold = True
+            .HorizontalAlignment = xlCenter   '*wrap and autofit text to fit freq. range
+            .Cells(1, 1) = "Freq."
+            .Cells(1, 2) = "Power"
+        End With
+                                                'finds mean and max of topr
+    ActiveSheet.Range("topr").Offset(Range("topr").Rows.Count, 1).Resize(1, 1).Activate
+    ActiveCell.FormulaR1C1 = "=average(R[-1]C:R[-" & Range("topr").Rows.Count & "]C)"
+    meanamp = ActiveCell
+    ActiveCell.Offset(0, -1).Resize(2, 1).Font.Bold = True
+    ActiveCell.Offset(0, -1).Value = "Mean"
+    ActiveSheet.Range("topr").Offset(Range("topr").Rows.Count + 1, 1).Resize(1, 1).Activate
+    ActiveCell.FormulaR1C1 = "=max(R[-1]C:R[-" & Range("topr").Rows.Count & "]C)"
+    maxamp = ActiveCell
+    ActiveCell.Offset(0, -1).Value = "Max"
+    
+                                            'sets frequency ranges of bottomr
+    ActiveSheet.Range("bottomr").Columns(1).Insert
+    ActiveSheet.Range("bottomr").Activate
+    ActiveSheet.Range("bottomr").Offset(0, -1).Resize(Range("bottomr").Rows.Count, 1).Select
+        With Selection
+            .Font.Bold = True
+            .HorizontalAlignment = xlCenter
+            .VerticalAlignment = xlCenter
+            currentrow = 1
+            Do While (.Rows(currentrow).Offset(0, 1) < 0.1)
+                currentrow = currentrow + 1
+            Loop
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 4)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    .Value = "Delta"
+                    '.Offset(0, 1).Select
+                    '    With Selection
+                    '        deltatot = "=sum(RC:R[+3]C)"
+                    '        ActiveSheet.Cells(5, 5) = deltatot
+                    '    End With
+                    'ActiveSheet.Cells(5, 5).Value = "=sum(" & .Offset(0, 1).Resize(5, 1) & ")"  'RC[+1]:R[+5]C[+1])"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 8)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    .Value = "Theta"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 13)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    .Value = "Alpha"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 30)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    .Value = "Beta"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 100 Or currentrow > Range("bottomr").Rows.Count)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    .Value = "Gamma"
+                End With
+                
+                
+        End With
+        
+        
+    Charts.Add                                '*make chart code more efficient
+    With ActiveChart
+        .ChartType = xlXYScatterLinesNoMarkers
+        .SetSourceData Source:=Sheet1.Range("topr").Resize(Range("topr").Rows.Count, 2), PlotBy _
+            :=xlColumns
+        .Location where:=xlLocationAsNewSheet
+        .HasTitle = True
+        .ChartTitle.Characters.Text = "Channel 1"
+        .Axes(xlCategory, xlPrimary).HasTitle = True
+        .Axes(xlCategory, xlPrimary).AxisTitle.Characters.Text = "Time"
+        .Axes(xlValue, xlPrimary).HasTitle = True
+        .Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = "Voltage"
+    End With
+    
+End Sub
+
+
+
+Sub analyzer()
+    Dim currsheet As Integer, currentrow As Integer, tempint As Integer, tbnormalized As Single, meanamp As Single, _
+        maxamp As Single, deltatot As Single, alphatot As Single, betatot As Single, gammatot As Single, tempstr As String
+    ActiveWorkbook.Sheets.Add after:=Sheet14
+    ActiveSheet.Name = "Analysis"
+    ActiveSheet.Cells(1, 1).Value = ActiveWorkbook.Name + " -  " + ActiveSheet.Name
+    
+    'title
+    ActiveSheet.Cells.HorizontalAlignment = xlLeft
+    ActiveSheet.Cells(1, 1).Font.Bold = True
+    ActiveSheet.Columns(1).ColumnWidth = 22.5
+    For tempint = 2 To 10
+        ActiveSheet.Columns(tempint).ColumnWidth = 11.5
+    Next
+    ActiveSheet.Cells(1, 1) = ActiveWorkbook.Name
+    Range("A4:H9").Name = "top"
+    Range("top").Select
+        With Selection
+            .BorderAround LineStyle:=xlDouble
+            For tempint = 2 To 8
+                .Columns(tempint).Borders(xlEdgeLeft).Weight = xlThin
+            Next
+            .Rows(1).Font.Bold = True
+            .Cells(1, 1) = "Analysis 1"
+            .Range("B1:H1").MergeCells = True
+            .Range("B2:H2").Borders(xlEdgeTop).Weight = xlThin
+            .Range("A3:H3").Borders(xlEdgeBottom).Weight = xlThin
+            .Cells(1, 2).HorizontalAlignment = xlCenter
+            .Cells(1, 2) = "Time (sec)"
+            .Cells(2, 2) = "Segment Start"
+            .Cells(2, 3) = "EEG change"
+            .Cells(2, 4) = "Seizure Onset"
+            .Cells(2, 5) = "Seizure Stop"
+            .Cells(2, 6) = "Recurrent"
+            .Cells(2, 7) = "Recurrent"
+            .Cells(2, 8) = "Recovery"
+            .Cells(3, 1) = "Segment"
+            .Cells(3, 3) = "Start"
+            .Cells(3, 6) = "Seizure Onset"
+            .Cells(3, 7) = "Seizure Stop"
+            .Cells(3, 8) = "Start"
+            .Cells(4, 1) = "Before NMDA"
+            .Cells(5, 1) = "During NMDA"
+            .Cells(6, 1) = "After NMDA"
+        End With
+    Range("A12:I22").Name = "middle"
+    Range("middle").Select
+        With Selection
+            '.VerticalAlignment = xlCenter   *find way to center numbers
+            .BorderAround LineStyle:=xlDouble
+            .Columns(1).Borders(xlEdgeRight).Weight = xlThin
+            .Rows(3).Borders(xlEdgeBottom).Weight = xlThin
+            .Rows(5).Borders(xlEdgeBottom).Weight = xlThin
+            .Rows(7).Borders(xlEdgeBottom).Weight = xlThin
+            .Rows(9).Borders(xlEdgeBottom).Weight = xlThin
+            .Columns(2).Borders(xlEdgeRight).Weight = xlThin
+            .Range("C4:C11").Borders(xlEdgeRight).Weight = xlThin
+            .Columns(4).Borders(xlEdgeRight).Weight = xlThin
+            .Range("E4:E11").Borders(xlEdgeRight).Weight = xlThin
+            .Range("F4:F11").Borders(xlEdgeRight).Weight = xlThin
+            .Range("G4:G11").Borders(xlEdgeRight).Weight = xlThin
+            .Range("H4:H11").Borders(xlEdgeRight).Weight = xlThin
+            .Rows(1).Font.Bold = True
+            .Cells(1, 1) = "Analysis 2- Channel 1"
+            .Cells(2, 1).Font.Bold = True
+            .Cells(2, 1) = "(cut files)"
+            .Cells(2, 2) = "Cut Period"
+            .Range("C2:D2").Select
+                With Selection
+                    .MergeCells = True
+                    .HorizontalAlignment = xlCenter
+                    .Value = "Amplitude (microvolt)"
+                End With
+            .Range("E2:I2").Select
+                With Selection
+                    .MergeCells = True
+                    .HorizontalAlignment = xlCenter
+                    .Value = "Total Power (PSD unit)"
+                End With
+            .Cells(3, 1) = "Seizure Phase"
+            .Cells(3, 2) = "(sec)"
+            .Cells(3, 3) = "Average"
+            .Cells(3, 4) = "Maximum"
+            .Cells(3, 5) = "Delta"
+            .Cells(3, 6) = "Theta"
+            .Cells(3, 7) = "Alpha"
+            .Cells(3, 8) = "Beta"
+            .Cells(3, 9) = "Gamma"
+            .Cells(4, 1) = "Pre-NMDA, pre-seizure"
+            .Cells(5, 1) = "control"
+            .Cells(6, 1) = "Post-NMDA, pre-seizure"
+            .Cells(7, 1) = "EEG change"
+            .Cells(8, 1) = "Post-NMDA"
+            .Cells(9, 1) = "seizure"
+            .Cells(10, 1) = "Post-NMDA, post-seizure"
+            .Cells(11, 1) = "recovery"
+            .Range("B4:I11").NumberFormat = "0.00000"
+        End With
+
+    'find way to loop
+    Range("A26:I36").Name = "bottom"
+    Range("bottom").Select
+        With Selection
+            '.VerticalAlignment = xlCenter   *find way to center numbers
+            .BorderAround LineStyle:=xlDouble
+            .Columns(1).Borders(xlEdgeRight).Weight = xlThin
+            .Rows(3).Borders(xlEdgeBottom).Weight = xlThin
+            .Rows(5).Borders(xlEdgeBottom).Weight = xlThin
+            .Rows(7).Borders(xlEdgeBottom).Weight = xlThin
+            .Rows(9).Borders(xlEdgeBottom).Weight = xlThin
+            .Columns(2).Borders(xlEdgeRight).Weight = xlThin
+            .Range("C4:C11").Borders(xlEdgeRight).Weight = xlThin
+            .Columns(4).Borders(xlEdgeRight).Weight = xlThin
+            .Range("E4:E11").Borders(xlEdgeRight).Weight = xlThin
+            .Range("F4:F11").Borders(xlEdgeRight).Weight = xlThin
+            .Range("G4:G11").Borders(xlEdgeRight).Weight = xlThin
+            .Range("H4:H11").Borders(xlEdgeRight).Weight = xlThin
+            .Rows(1).Font.Bold = True
+            .Cells(1, 1) = "Analysis 2- Channel 2"
+            .Cells(2, 1).Font.Bold = True
+            .Cells(2, 1) = "(cut files)"
+            .Cells(2, 2) = "Cut Period"
+            .Range("C2:D2").Select
+                With Selection
+                    .MergeCells = True
+                    .HorizontalAlignment = xlCenter
+                    .Value = "Amplitude (microvolt)"
+                End With
+            .Range("E2:I2").Select
+                With Selection
+                    .MergeCells = True
+                    .HorizontalAlignment = xlCenter
+                    .Value = "Total Power (PSD unit)"
+                End With
+            .Cells(3, 1) = "Seizure Phase"
+            .Cells(3, 2) = "(sec)"
+            .Cells(3, 3) = "Average"
+            .Cells(3, 4) = "Maximum"
+            .Cells(3, 5) = "Delta"
+            .Cells(3, 6) = "Theta"
+            .Cells(3, 7) = "Alpha"
+            .Cells(3, 8) = "Beta"
+            .Cells(3, 9) = "Gamma"
+            .Cells(4, 1) = "Pre-NMDA, pre-seizure"
+            .Cells(5, 1) = "control"
+            .Cells(6, 1) = "Post-NMDA, pre-seizure"
+            .Cells(7, 1) = "EEG change"
+            .Cells(8, 1) = "Post-NMDA"
+            .Cells(9, 1) = "seizure"
+            .Cells(10, 1) = "Post-NMDA, post-seizure"
+            .Cells(11, 1) = "recovery"
+            .Range("B29:I36").NumberFormat = "0.00000"
+        End With
+    
+    '__________________________________________________________________
+     
+    For currsheet = 1 To 4                          'activates each sheet
+    If currsheet = 1 Then Sheet11.Activate
+    If currsheet = 2 Then Sheet12.Activate
+    If currsheet = 3 Then Sheet13.Activate
+    If currsheet = 4 Then Sheet14.Activate
+    'If currsheet = 5 Then Sheet15.Activate
+    'If currsheet = 6 Then Sheet16.Activate
+    'If currsheet = 7 Then Sheet17.Activate
+    'If currsheet = 8 Then Sheet18.Activate
+    
+    If currsheet < 5 Then
+        ActiveSheet.Columns("C:F").Delete               'deletes channels 4 to 6
+    If currsheet > 4 Then
+        ActiveSheet.Columns(2).Delete
+        ActiveSheet.Columns("D:F").Delete
+    End If
+    
+    ActiveSheet.Rows("1:4").Insert                  'adds 4 rows to top
+    currentrow = 8                                  'adds rows above bottom range
+    Do While ActiveSheet.Cells(currentrow, 1) <> 0
+        currentrow = currentrow + 1
+    Loop
+    For tempint = 1 To 10
+        ActiveSheet.Rows(currentrow).Insert
+    Next
+    
+    ActiveSheet.Range("A1:E1").Select       'Puts title of sheet in cell A1
+        With Selection
+            .MergeCells = True
+            .Font.Bold = True
+            .Value = ActiveWorkbook.Name + " -  " + ActiveSheet.Name
+        End With
+    ActiveSheet.Range("A10").CurrentRegion.Offset(1, 0).Resize(Range("A10").CurrentRegion.Rows.Count - 1, Range("A10").CurrentRegion.Columns.Count).Name = "topr"
+    'ActiveSheet.Range("A10").CurrentRegion.Offset(1, 0).Name = "topr"  'sets top and bottom ranges
+    'Range("topr") = Range("topr").Resize(Range("topr").Rows.Count - 1, Range("topr").Columns.Count)
+    ActiveSheet.Range("A1").Offset(currentrow + 10, 0).CurrentRegion.Name = "bottomr"
+                                                            'sets ups bottomrtotals
+    ActiveSheet.Range("bottomr").Offset(3, Range("bottomr").Columns.Count + 3).Resize(3, 5).Select
+        With Selection
+            .Name = "bottomrtotals"
+            .NumberFormat = "0.00000"
+            .HorizontalAlignment = xlCenter
+            .Rows(1).MergeCells = True
+            .Rows(1).Font.Bold = True
+            .Cells(1, 1) = "Total Power"
+            .Cells(2, 1) = "Delta"
+            .Cells(2, 2) = "Theta"
+            .Cells(2, 3) = "Alpha"
+            .Cells(2, 4) = "Beta"
+            .Cells(2, 5) = "Gamma"
+        End With
+    
+    
+    ActiveSheet.Range("topr").Rows(1).Insert
+    ActiveSheet.Range("topr").Offset(-2, 0).Resize(2, Range("topr").Columns.Count).Select 'titles columns of topr
+        With Selection
+           .Rows(1).Font.Bold = True
+           .HorizontalAlignment = xlCenter
+               .Cells(2, 1) = "(sec)"
+               .Cells(2, 2) = "(microvolt)"
+       End With
+        
+    ActiveSheet.Range("bottomr").Offset(-1, 1).Resize(1, 2).Select  'titles columns of bottomr
+        With Selection
+            .Font.Bold = True
+            .HorizontalAlignment = xlCenter   '*wrap and autofit text to fit freq. range
+            .Cells(1, 1) = "Freq."
+            .Cells(1, 2) = "Power"
+        End With
+                                                'finds mean and max of topr (make more efficient)
+    
+    
+    ActiveSheet.Range("topr").Offset(Range("topr").Rows.Count + 1, 1).Resize(2, 2).Name = "toprmeanmax"
+    Range("toprmeanmax").Select
+        With Selection
+            .NumberFormat = "0.00000"
+            .Rows(1).Font.Bold = True
+            .Cells(1, 1) = "Average"
+            .Cells(1, 2) = "Maximum"
+            .Cells(2, 1).FormulaR1C1 = "=average(R[-" & Range("topr").Rows.Count + 2 & "]C:R[-3]C)"
+            .Cells(2, 2).FormulaR1C1 = "=max(R[-" & Range("topr").Rows.Count + 2 & "]C[-1]:R[-3]C[-1])"
+            .Rows(2).Copy
+            If currsheet = 1 Then
+                Sheets("Analysis").Cells(15, 2).PasteSpecial xlPasteValues
+                Sheet11.Activate
+            ElseIf currsheet = 2 Then
+                Sheets("Analysis").Cells(17, 2).PasteSpecial xlPasteValues
+                Sheet12.Activate
+            ElseIf currsheet = 3 Then
+                Sheets("Analysis").Cells(19, 2).PasteSpecial xlPasteValues
+                Sheet13.Activate
+            ElseIf currsheet = 4 Then
+                Sheets("Analysis").Cells(21, 2).PasteSpecial xlPasteValues
+                Sheet14.Activate
+            'ElseIf currsheet = 5 Then
+                'Sheets("Analysis").Cells(29, 2).PasteSpecial xlPasteValues
+                'Sheet15.Activate
+            'ElseIf currsheet = 6 Then
+                'Sheets("Analysis").Cells(31, 2).PasteSpecial xlPasteValues
+                'Sheet16.Activate
+            'ElseIf currsheet = 7 Then
+                'Sheets("Analysis").Cells(33, 2).PasteSpecial xlPasteValues
+                'Sheet17.Activate
+            'ElseIf currsheet = 8 Then
+                'Sheets("Analysis").Cells(33, 2).PasteSpecial xlPasteValues
+                'Sheet18.Activate
+            End If
+        End With
+    
+                                            'sets frequency ranges of bottomr
+    ActiveSheet.Range("bottomr").Columns(1).Insert
+    ActiveSheet.Range("bottomr").Activate
+    ActiveSheet.Range("bottomr").Offset(0, -1).Resize(Range("bottomr").Rows.Count, 1).Select
+        With Selection
+            .Font.Bold = True
+            .HorizontalAlignment = xlCenter
+            .VerticalAlignment = xlCenter
+            currentrow = 1
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 4)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    tempint = tempint - 1
+                    .Value = "=sum(RC[+2]:R[+" & tempint & "]C[+2])"
+                    Range("bottomrtotals").Cells(3, 1) = .Value
+                    .Value = "Delta"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 8)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    tempint = tempint - 1
+                    .Value = "=sum(RC[+2]:R[+" & tempint & "]C[+2])"
+                    Range("bottomrtotals").Cells(3, 2) = .Value
+                    .Value = "Theta" '
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 13)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    tempint = tempint - 1
+                    .Value = "=sum(RC[+2]:R[+" & tempint & "]C[+2])"
+                    Range("bottomrtotals").Cells(3, 3) = .Value
+                    .Value = "Alpha"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 30)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    tempint = tempint - 1
+                    .Value = "=sum(RC[+2]:R[+" & tempint & "]C[+2])"
+                    Range("bottomrtotals").Cells(3, 4) = .Value
+                    .Value = "Beta"
+                End With
+            tempint = 0
+            Do Until (.Rows(currentrow).Offset(0, 1) > 80 Or currentrow > Range("bottomr").Rows.Count)
+                currentrow = currentrow + 1
+                tempint = tempint + 1
+            Loop
+            .Rows(currentrow - tempint).Resize(tempint, 1).Select
+                With Selection
+                    .MergeCells = True
+                    tempint = tempint - 1
+                    .Value = "=sum(RC[+2]:R[+" & tempint & "]C[+2])"
+                    Range("bottomrtotals").Cells(3, 5) = .Value
+                    .Value = "Gamma"
+                End With
+            Range("bottomrtotals").Rows(3).Copy
+            If currsheet = 1 Then
+                Sheets("Analysis").Cells(15, 4).PasteSpecial xlPasteValues
+            ElseIf currsheet = 2 Then
+                Sheets("Analysis").Cells(17, 4).PasteSpecial xlPasteValues
+            ElseIf currsheet = 3 Then
+                Sheets("Analysis").Cells(19, 4).PasteSpecial xlPasteValues
+            ElseIf currsheet = 4 Then
+                Sheets("Analysis").Cells(21, 4).PasteSpecial xlPasteValues
+            'ElseIf currsheet = 5 Then
+                'Sheets("Analysis").Cells(29, 4).PasteSpecial xlPasteValues
+            'ElseIf currsheet = 6 Then
+                'Sheets("Analysis").Cells(31, 4).PasteSpecial xlPasteValues
+            'ElseIf currsheet = 7 Then
+                'Sheets("Analysis").Cells(33, 4).PasteSpecial xlPasteValues
+            'ElseIf currsheet = 8 Then
+                'Sheets("Analysis").Cells(33, 4).PasteSpecial xlPasteValues
+            End If
+        End With
+    Next
+               
+
+End Sub
