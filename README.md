@@ -46,7 +46,7 @@ Used ImageJ's Java-like programming language to set up a video annotation workfl
 
 ### 02 Cardiac Cath Report Info
 *December 2019*  
-Used regex within Python to obtain infromation from free-text cardiac catheterization procedure reports.
+Used regex within Python to extract infromation from cardiac catheterization procedure reports.
 
 ### 03 FDA 510k Scraping
 *December 2023*  
@@ -54,7 +54,7 @@ Performed web scraping of FDA 510k submissions to identify those pertaining to c
 
 ### 04 Excel EEG Graphs
 *June 2005*  
-Joined a neuroscience lab in 2005 that analyzed and visualized EEG data in Excel. Learned Excel VBA from a book and scripted a macro to automate these steps, saving several hours of work per week.
+Joined a neuroscience lab in college that analyzed and visualized EEG data in Excel. Learned Excel VBA from a book and scripted a macro to automate these steps, saving several hours of work per week.
 
 ### 05 Healthcare AI Assessment slide deck
 *October 2023*  
