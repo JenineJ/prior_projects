@@ -1,6 +1,6 @@
 # Prior Projects
 
-Sample of code from my prior projects (in repository [jeninej](https://github.com/JenineJ/jeninej)).
+Examples of code from my prior projects
 
 ## ECG deep learning
 *May 2020*  
