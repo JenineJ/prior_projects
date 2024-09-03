@@ -1,6 +1,6 @@
 # Prior Projects
 
-Sample of code from my prior projects (in repository [jeninej](https://github.com/JenineJ/jeninej)).
+Examples of code from my prior projects
 
 ## ECG deep learning
 *May 2020*  
@@ -26,7 +26,7 @@ I created a deep learning model that emulated the model architecture described i
 
 ## Echocardiogram Segmentation
 *July 2021*  
-Used PyTorch to create a UNet model to perform segmentation of the mitral valve on echocardiogram (cardiac ultrasound) videos. The scripts include options for data augmentation. Resulting model segmented mitral valve on each frame of test videos.
+Used PyTorch to create a UNet model to perform segmentation of the mitral valve on echocardiogram (cardiac ultrasound) videos. Included options for data augmentation in the scripts. Resulting model segmented mitral valve on each frame of test videos.
 
 <p align="center">
   <img width=250 " src="https://github.com/user-attachments/assets/0a9d48a5-b893-481e-bd02-4bc85baaf7e4">
@@ -46,7 +46,7 @@ Used ImageJ's Java-like programming language to set up a video annotation workfl
 
 ### 02 Cardiac Cath Report Info
 *December 2019*  
-Used regex within Python to obtain infromation from free-text cardiac catheterization procedure reports.
+Used regex within Python to extract infromation from cardiac catheterization procedure reports.
 
 ### 03 FDA 510k Scraping
 *December 2023*  
@@ -54,7 +54,7 @@ Performed web scraping of FDA 510k submissions to identify those pertaining to c
 
 ### 04 Excel EEG Graphs
 *June 2005*  
-Joined a neuroscience lab in 2005 that analyzed and visualized EEG data in Excel. Learned Excel VBA from a book and scripted a macro to automate these steps, saving several hours of work per week.
+Joined a neuroscience lab in college that analyzed and visualized EEG data in Excel. Learned Excel VBA from a book and scripted a macro to automate these steps, saving several hours of work per week.
 
 ### 05 Healthcare AI Assessment slide deck
 *October 2023*  
